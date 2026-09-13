@@ -1,11 +1,11 @@
 {
   "name": "a3-ts",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
-  "description": "TypeScript reference implementation of the a3 core contract (JCS, CloudEvents, temporal, truth, confidence).",
+  "description": "TypeScript reference implementation of A3-EP v0.2.0 with lock v2 (JCS, CloudEvents io.a3ep.*, temporal, truth, confidence).",
   "scripts": {
-    "test": "vitest run",
+    "test": "node --test --test-reporter=spec test/*.test.ts",
     "typecheck": "tsc --noEmit"
   },
   "engines": {

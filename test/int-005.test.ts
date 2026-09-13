@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+import { describe, it } from "node:test";
+import { expect } from "./expect.ts";
 import {
   aggregate,
   categoryOf,
@@ -18,46 +19,12 @@ import { loadFixture } from "./helpers.ts";
 describe("INT-005 confidence vectors", () => {
   it("reproduces confidence-vectors.json scores", () => {
     const generated = confidenceLockCorpus() as Record<string, unknown>;
-    const lock = JSON.parse(loadFixture("confidence-vectors.json")) as Record<
-      string,
-      unknown
-    >;
-    expect(serialize(generated.config)).toBe(serialize(lock.config));
-    expect(serialize(generated.corroboration)).toBe(serialize(lock.corroboration));
-    expect(serialize(generated.mapping)).toBe(serialize(lock.mapping));
-    expect(serialize(generated.verification)).toBe(serialize(lock.verification));
-    expect(serialize(generated.weights_shift)).toBe(serialize(lock.weights_shift));
-    expect(serialize(generated.zero_not_compensated)).toBe(
-      serialize(lock.zero_not_compensated)
-    );
-
-    const genFixture = generated.fixture as Record<string, unknown>;
-    const lockFixture = lock.fixture as Record<string, unknown>;
-    expect(genFixture.score).toBe(lockFixture.score);
-    expect(genFixture.category).toBe(lockFixture.category);
-    expect(genFixture.truth_class).toBe(lockFixture.truth_class);
-    expect(serialize(genFixture.weights)).toBe(serialize(lockFixture.weights));
-
-    const genRecency = generated.recency as Record<string, number>;
-    const lockRecency = lock.recency as Record<string, number>;
-    expect(genRecency.age_0).toBe(lockRecency.age_0);
-    expect(genRecency.half_life).toBe(lockRecency.half_life);
-    expect(genRecency.two_half_lives).toBe(lockRecency.two_half_lives);
-    expect(genRecency.stale_four_half_lives).toBe(lockRecency.stale_four_half_lives);
-
-    // Declared divergence (Kotlin lock, not a TS bug): see REVIEW_A3_TS.md.
-    const tsRecency = genRecency.fixture_10799s;
-    const kotlinRecency = lockRecency.fixture_10799s;
-    expect(JSON.stringify(tsRecency)).toBe("0.7071294727113612");
-    expect(JSON.stringify(kotlinRecency)).toBe("0.7071294727113613");
-    expect(tsRecency).not.toBe(kotlinRecency);
-    const genVec = genFixture.vector as Record<string, number>;
-    const lockVec = lockFixture.vector as Record<string, number>;
-    expect(JSON.stringify(genVec.recency)).toBe("0.7071294727113612");
-    expect(JSON.stringify(lockVec.recency)).toBe("0.7071294727113613");
-    expect(serialize({ ...genVec, recency: 0 })).toBe(
-      serialize({ ...lockVec, recency: 0 })
-    );
+    const lockBytes = loadFixture("confidence-vectors.json");
+    const lock = JSON.parse(lockBytes) as Record<string, unknown>;
+    expect(serialize(generated)).toBe(lockBytes);
+    const lockFixture = lock.fixture as { score: number };
+    expect(lockFixture.score).toBe(0.565703578169089);
+    console.log(`PASS INT-005 scores lock v2 fixture=${lockFixture.score}`);
   });
 
   it("weighted min, decay, corroboration, mapping", () => {

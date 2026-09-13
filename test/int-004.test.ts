@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+import { describe, it } from "node:test";
+import { expect } from "./expect.ts";
 import { serialize } from "../src/jcs.ts";
 import {
   bearer,
@@ -73,6 +74,7 @@ describe("INT-004 truth vectors and TR invariants", () => {
     expect(() =>
       requireAxisCoherent(bearer("fact", "observed_signed", "ver-1"), "believed", "stale")
     ).toThrow(TruthReject);
+    console.log("PASS INT-004 truth-vectors v2");
   });
 });
 
