@@ -1,9 +1,14 @@
 import { readFileSync } from "node:fs";
-import { describe, expect, it } from "vitest";
+import { describe, it } from "node:test";
+import { expect } from "./expect.ts";
 import { canonicalize } from "../src/jcs.ts";
-import { EXPECTED_EVENT_ID, loadFixture } from "./helpers.ts";
+import {
+  EXPECTED_EVENT_ID,
+  fixturesDir,
+  loadFixture,
+  sha256Of
+} from "./helpers.ts";
 import { join } from "node:path";
-import { fixturesDir } from "./helpers.ts";
 
 describe("INT-001 JCS RFC 8785", () => {
   it("matches RFC 8785 appendix A and the envelope-rfc8785 lock", () => {
@@ -11,6 +16,7 @@ describe("INT-001 JCS RFC 8785", () => {
     const lock = loadFixture("envelope-rfc8785.json");
     const canonical = canonicalize(input);
     expect(canonical).toBe(lock);
+    console.log(`PASS INT-001 RFC8785 bytes=${canonical.length}`);
   });
 
   it("sorts keys and drops whitespace", () => {
@@ -21,12 +27,15 @@ describe("INT-001 JCS RFC 8785", () => {
   });
 });
 
-describe("INT-002 envelope lock", () => {
+describe("INT-002 envelope lock v2", () => {
   it("reproduces payload, event, hashes, and event.id", async () => {
     const { serialize } = await import("../src/jcs.ts");
-    const { contentId, encodeEvent, packFromPayloadObject } = await import(
-      "../src/envelope.ts"
-    );
+    const {
+      TYPE_BELIEF_ADMITTED,
+      contentId,
+      encodeEvent,
+      packFromPayloadObject
+    } = await import("../src/envelope.ts");
     const { sha256Utf8 } = await import("../src/hash.ts");
     const payloadLock = loadFixture("envelope-payload.json");
     const eventLock = loadFixture("envelope-event.json");
@@ -38,6 +47,9 @@ describe("INT-002 envelope lock", () => {
       sourceId: "train",
       subject: "trip.milano"
     });
+    expect(event.type).toBe(TYPE_BELIEF_ADMITTED);
+    expect(eventLock.includes('"type":"a3.')).toBe(false);
+    expect(eventLock.includes(`"type":"${TYPE_BELIEF_ADMITTED}"`)).toBe(true);
     expect(event.id).toBe(EXPECTED_EVENT_ID);
     expect(contentId(event.data)).toBe(EXPECTED_EVENT_ID);
     expect(encodeEvent(event)).toBe(eventLock);
@@ -50,5 +62,10 @@ describe("INT-002 envelope lock", () => {
     expect(sha256Utf8(loadFixture("envelope-rfc8785.json"))).toBe(
       hashes["envelope-rfc8785.json"]
     );
+    const att = event.data.attestation;
+    expect(att?.attesterId).toBe("urn:a3:party:attester");
+    expect(att?.requesterId).toBe("urn:a3:party:requester");
+    expect(sha256Of(payloadLock)).toBe(EXPECTED_EVENT_ID);
+    console.log(`PASS INT-002 event_id=${event.id} type=${event.type}`);
   });
 });

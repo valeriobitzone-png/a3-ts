@@ -5,31 +5,46 @@ import { fileURLToPath } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
 export const fixturesDir = join(here, "fixtures");
+export const fixturesV1Dir = join(fixturesDir, "v1");
 export const a3Root = join(here, "..", "..", "a3");
 
-export const LOCK_SHA1: Record<string, string> = {
-  "tm-order.json": "8c70f083d4aa201bb1d8fc2658ffbe2c730d1c5e",
-  "tm-dedup.json": "05bd0b2fb50b2253a7b3c5a793fa0a73749828d4",
-  "tm-fold.json": "ee8808d9c1c0a02b264cb7b834f6f8a97e05e80a",
-  "truth-vectors.json": "59ce3d78c3cabdeaa5109f0bcf8a3431818e42e9",
-  "envelope-rfc8785.json": "616a3ff076f6ed2fbf55bbc2bcd2248767df657b",
-  "envelope-payload.json": "205c0f8dce6ddaf2b353ba8c7d82bbe83f2e19c3",
-  "envelope-event.json": "0fe78e8baf849562f58f1bae4e6703dc03bfdd78",
-  "envelope-hashes.json": "2129d913ad2ffe865e80a98a8a47dd1b00fd5b8b",
-  "confidence-vectors.json": "b1816d968b3e9a45b751b45dda3f52ad8086d81c"
+/** SHA-256 of lock v2 files (conformance/vectors/v2/vector-sha256.json). */
+export const LOCK_SHA256: Record<string, string> = {
+  "tm-order.json": "e805711fc39d48a59b47bfdd147737016db56a3a68511f27229e769691378a6e",
+  "tm-dedup.json": "b6b05fefb45b1f9ff2fc882d16eb5a1f0b1cf96e6d8455070836d472e333e0ba",
+  "tm-fold.json": "f80b9b513fc928d11e8aceb66a29d7cfb7540a0bb8451c9017630b105602e9f5",
+  "truth-vectors.json": "1ddb48779a470fd65adc59a5e0245767f07bd4ea91ad70b7c3e10afbdebab5d6",
+  "envelope-rfc8785.json": "2d5e01a318d0f0879ab568c4be289c8b1f64ef8921a53c6277d5e069978baacb",
+  "envelope-payload.json": "1fec213fbaf6d420cf9ff95c51c022c4cdfb1f43fabcf82647e03c03f92f2b7b",
+  "envelope-event.json": "fa6e007a23751ad55c22291b64982f0d7c8287eb5723b446a3a5fd72c470e939",
+  "envelope-hashes.json": "d27e67f05719b77daeb14a4d219a87cb332998fe2c6d163571f35e7b90d76ff5",
+  "confidence-vectors.json": "25efbc9f1b3730658c34502f2564d18a8aad04c1ee202b672be4b020917fddee"
 };
 
-export const EXPECTED_EVENT_ID =
+export const EXPECTED_EVENT_ID_V1 =
   "477e868489f5c48d138e4c084e9bf13a40ed66390b964365869f7578dfa2e75a";
+
+export const EXPECTED_EVENT_ID =
+  "1fec213fbaf6d420cf9ff95c51c022c4cdfb1f43fabcf82647e03c03f92f2b7b";
+
+export function sha256Of(bytes: Uint8Array | string): string {
+  return createHash("sha256").update(bytes).digest("hex");
+}
 
 export function loadFixture(name: string): string {
   const bytes = readFileSync(join(fixturesDir, name));
-  const sha1 = createHash("sha1").update(bytes).digest("hex");
-  const expected = LOCK_SHA1[name];
-  if (expected && sha1 !== expected) {
-    throw new Error(`SHA-1 mismatch for ${name}: ${sha1} != ${expected}`);
+  const expected = LOCK_SHA256[name];
+  if (expected) {
+    const digest = sha256Of(bytes);
+    if (digest !== expected) {
+      throw new Error(`SHA-256 mismatch for ${name}: ${digest} != ${expected}`);
+    }
   }
   return bytes.toString("utf8");
+}
+
+export function loadV1Fixture(name: string): string {
+  return readFileSync(join(fixturesV1Dir, name), "utf8");
 }
 
 export function permutations<T>(list: T[]): T[][] {

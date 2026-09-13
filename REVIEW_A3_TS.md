@@ -1,8 +1,8 @@
 # REVIEW_A3_TS
 
-AUDIT-FIRST. Protocollo: FASE A3-TS — seconda implementazione di riferimento in TypeScript, da spec, non da traduzione Kotlin. Repo sibling `a3-ts`. Runtime: zero dipendenze npm (solo `node:crypto` per SHA-256). JCS reimplementato da RFC 8785. Tag `a3-ts-v0.1` solo a gate verde.
+AUDIT-FIRST. Protocollo: FASE A3-TS-REBASE — seconda implementazione TypeScript sui lock v2 (`io.a3ep.*` + attestation). Repo sibling `a3-ts`. Frozen: repo `a3` (zero diff). Niente push su `a3`. Tag `a3-ts-v0.2` solo a gate verde; push solo `a3-ts`.
 
-**Contratto:** gli stessi lock JSON di `:core:temporal`, `:core:truth`, `:core:envelope`, `:core:confidence` sono il confine. TS legge i REVIEW + RFC 8785 + CloudEvents 1.0. I file lock sono fixture, non sorgente Kotlin.
+**Contratto:** valida contro A3-EP v0.2.0 con lock v2. Parser accetta `a3.*` e normalizza a `io.a3ep.*`. Output v2 emette solo `io.a3ep.*`. `attestation` obbligatorio sui payload lock v2; assente in v1 → nessuna validazione attester. CF-004: `attester_id = requester_id` su `io.a3ep.action.authorized` → reject.
 
 ---
 
@@ -12,78 +12,81 @@ AUDIT-FIRST. Protocollo: FASE A3-TS — seconda implementazione di riferimento i
 |------|--------|
 | Package manager | pnpm |
 | Linguaggio | TypeScript `strict` + `exactOptionalPropertyTypes` + `noUncheckedIndexedAccess` |
-| Test | vitest (`pnpm test`) |
+| Test | `node --test` (`pnpm test`) |
 | Typecheck | `pnpm typecheck` |
 | Runtime deps | nessuna (`package.json` senza `dependencies`) |
-| pnpm 11 | `allowBuilds.esbuild: true` solo per il postinstall di vitest/vite; non è una dipendenza runtime |
-| Hash | `node:crypto` SHA-256 / SHA-1 |
+| Hash | `node:crypto` SHA-256 |
 | JCS | `src/jcs.ts` da RFC 8785 (nessuna libreria terza) |
+| Spec | A3-EP v0.2.0 lock v2 |
 
 ---
 
-## SHA-1 lock (verificati all'import dei fixture)
+## Identità lock
 
-| File | SHA-1 |
-|------|-------|
-| `tm-order.json` | `8c70f083d4aa201bb1d8fc2658ffbe2c730d1c5e` |
-| `tm-dedup.json` | `05bd0b2fb50b2253a7b3c5a793fa0a73749828d4` |
-| `tm-fold.json` | `ee8808d9c1c0a02b264cb7b834f6f8a97e05e80a` |
-| `truth-vectors.json` | `59ce3d78c3cabdeaa5109f0bcf8a3431818e42e9` |
-| `envelope-rfc8785.json` | `616a3ff076f6ed2fbf55bbc2bcd2248767df657b` |
-| `envelope-payload.json` | `205c0f8dce6ddaf2b353ba8c7d82bbe83f2e19c3` |
-| `envelope-event.json` | `0fe78e8baf849562f58f1bae4e6703dc03bfdd78` |
-| `envelope-hashes.json` | `2129d913ad2ffe865e80a98a8a47dd1b00fd5b8b` |
-| `confidence-vectors.json` | `b1816d968b3e9a45b751b45dda3f52ad8086d81c` |
+| Lock | `event_id` = SHA-256(JCS(payload)) |
+|------|------------------------------------|
+| v1 (backward parse) | `477e868489f5c48d138e4c084e9bf13a40ed66390b964365869f7578dfa2e75a` |
+| v2 | `1fec213fbaf6d420cf9ff95c51c022c4cdfb1f43fabcf82647e03c03f92f2b7b` |
 
-Mismatch SHA-1 all'import → il test abortisce prima delle asserzioni.
-
-`event.id` atteso (e ottenuto): `477e868489f5c48d138e4c084e9bf13a40ed66390b964365869f7578dfa2e75a`
+v2 `type` = `io.a3ep.belief.admitted`. v2 attestation = `{attester_id: urn:a3:party:attester, requester_id: urn:a3:party:requester}`.
 
 ---
 
-## Tabella audit — INT-001..007
+## SHA-256 lock v2 (verificati all'import dei fixture)
 
-| Test | Invariante | Percorso | Negativo | PASS |
-|------|------------|----------|----------|------|
-| INT-001 | JCS RFC 8785 appendix A | input RFC → byte identici a `envelope-rfc8785.json`; chiavi ordinate, no spazi | numero non finito → `JcsReject` | **PASS** |
-| INT-002 | envelope lock | JCS(payload)=payload lock; `id`=SHA-256 hex; event lock; hashes lock | id ≠ fingerprint → `EnvelopeReject` | **PASS** |
-| INT-003 | temporal order/dedup/fold | `tm-order` / `tm-dedup` / `tm-fold` byte-identici; fold commutativo su 24 permutazioni | `t_observe < t_event` / `t_admit < t_observe` → `TemporalReject` | **PASS** |
-| INT-004 | truth TR-001..006 | `truth-vectors.json` byte-identico; promote solo HYPOTHESIS+REAL; receipt≠FACT | parse senza classe/provenance; FACT da sandbox; HYPOTHESIS believed → `TruthReject` | **PASS** |
-| INT-005 | confidence scores | min pesato, decay diadico, corroboration, mapping identici al lock | dimensione mancante / range → `ConfidenceReject` | **PASS** (score); vedi divergenza recency |
-| INT-006 | round-trip envelope | payload lock → pack TS → byte identici a `envelope-event.json`; JCS RFC = lock | — | **PASS** |
-| INT-007 | indipendenza | `git diff` / `git status --porcelain` di `<home>/Desktop/a3` vuoti; nessuna runtime dep | — | **PASS** |
+| File | SHA-256 |
+|------|---------|
+| `tm-order.json` | `e805711fc39d48a59b47bfdd147737016db56a3a68511f27229e769691378a6e` |
+| `tm-dedup.json` | `b6b05fefb45b1f9ff2fc882d16eb5a1f0b1cf96e6d8455070836d472e333e0ba` |
+| `tm-fold.json` | `f80b9b513fc928d11e8aceb66a29d7cfb7540a0bb8451c9017630b105602e9f5` |
+| `truth-vectors.json` | `1ddb48779a470fd65adc59a5e0245767f07bd4ea91ad70b7c3e10afbdebab5d6` |
+| `envelope-rfc8785.json` | `2d5e01a318d0f0879ab568c4be289c8b1f64ef8921a53c6277d5e069978baacb` |
+| `envelope-payload.json` | `1fec213fbaf6d420cf9ff95c51c022c4cdfb1f43fabcf82647e03c03f92f2b7b` |
+| `envelope-event.json` | `fa6e007a23751ad55c22291b64982f0d7c8287eb5723b446a3a5fd72c470e939` |
+| `envelope-hashes.json` | `d27e67f05719b77daeb14a4d219a87cb332998fe2c6d163571f35e7b90d76ff5` |
+| `confidence-vectors.json` | `25efbc9f1b3730658c34502f2564d18a8aad04c1ee202b672be4b020917fddee` |
 
-Gate:
+Mismatch SHA-256 all'import → il test abortisce prima delle asserzioni. Manifest: `test/fixtures/vector-sha256.json`.
+
+---
+
+## Esecuzione
 
 ```
+node --test --test-reporter=spec test/*.test.ts
 pnpm test
-pnpm typecheck
 ```
 
 ---
 
-## Divergenza dichiarata (non riconciliata)
+## Tabella audit — INT-001..009
 
-**Campo:** `recency.fixture_10799s` e `fixture.vector.recency` in `confidence-vectors.json`.
+| Test | Invariante | Percorso | PASS |
+|------|------------|----------|------|
+| INT-001 | JCS RFC 8785 appendix A byte-identico | `envelope-rfc8785.json` | **PASS** |
+| INT-002 | envelope lock v2; `id` = `1fec213f…2f2b7b`; type `io.a3ep.*` | pack da payload v2 (input type `a3.*` normalizzato) | **PASS** |
+| INT-003 | tm-order/dedup/fold identici ai lock v2 | 24 permutazioni | **PASS** |
+| INT-004 | truth-vectors v2 | `truth-vectors.json` | **PASS** |
+| INT-005 | confidence-vectors v2; score identici; recency IEEE-754 nearest-even | `serialize(corpus) === lock` | **PASS** |
+| INT-006 | TS serializza envelope v2 = byte Kotlin v2 | `encodeEvent` = `envelope-event.json` | **PASS** |
+| INT-007 | parse v1 `a3.*` → `io.a3ep.*`; no crash; attestation assente | `test/fixtures/v1/envelope-event.json` | **PASS** |
+| INT-008 | CF-004 `attester_id = requester_id` su `io.a3ep.action.authorized` → reject | `pack` + `EnvelopeReject` | **PASS** |
+| INT-009 | freeze repo a3: `git diff` / porcelain vuoti | `<home>/Desktop/a3` | **PASS** |
 
-| Origine | Valore JSON | binary64 |
-|---------|-------------|----------|
-| Spec `2^(-(10799)/21600)`, arrotondato a binary64 nearest-even | `0.7071294727113612` | `0x1.6a0cdfceaa81bp-1` |
-| Lock Kotlin (Java `Math.pow`) | `0.7071294727113613` | `0x1.6a0cdfceaa81cp-1` |
-
-Il valore esatto è `0.707129472711361202…`. L'arrotondamento IEEE-754 corretto è il double TS/CPython. Il lock Kotlin è **1 ULP sopra**.
-
-**Bug:** implementazione Kotlin/Java (`2.0.pow`), non TS. TS usa l'esponenziazione ECMAScript sulla formula del REVIEW, senza copiare il double del lock.
-
-**Score:** identici lo stesso (`0.565703578169089`) perché `recency × 0.8` cade sullo stesso double da entrambi i vicini ULP. INT-005 verifica gli score, i mapping, la corroboration e i decay diadici (0 / ½ / 2× / 4×) byte-per-byte; asserisce esplicitamente la coppia ULP invece di forzare i byte del recency fixture.
-
-Nessun altro campo dei lock diverge.
+Gate: **verde**. Tag locale `a3-ts-v0.2`. Push solo `a3-ts`. Repo `a3` non toccato.
 
 ---
 
-## Cosa non è stato fatto
+## Recency
 
-- Nessuna traduzione del sorgente Kotlin.
-- Nessuna libreria JCS di terze parti.
-- Nessun tocco al repo `a3`.
-- Nessun push prima del tag `a3-ts-v0.1`.
+Lock v2 `fixture_10799s` = `0.7071294727113612` (IEEE-754 nearest-even). Il corpus TS collide sui byte del lock Kotlin v2. La divergenza 1 ULP dichiarata in `a3-ts-v0.1` è chiusa sul lock, non da un workaround TS.
+
+---
+
+## Vietato (rispettato)
+
+- Nessuna modifica al repo `a3`.
+- Backward compat v1 non rimosso (`test/fixtures/v1/`).
+- Nessun `a3.*` in output v2.
+- Nessun attester = requester silenzioso su irreversibile.
+- Nessun push su `a3`.

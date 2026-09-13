@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+import { describe, it } from "node:test";
+import { expect } from "./expect.ts";
 import { serialize } from "../src/jcs.ts";
 import {
   currentJson,
@@ -56,5 +57,6 @@ describe("INT-003 temporal locks", () => {
       expect(serialize(foldJson(fold(perm)[0]!))).toBe(foldBytes);
     }
     expect(foldBytes.includes("confidence")).toBe(false);
+    console.log("PASS INT-003 tm-order/dedup/fold lock v2");
   });
 });
