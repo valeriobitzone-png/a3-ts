@@ -71,7 +71,7 @@ pnpm test
 | INT-006 | TS serializza envelope v2 = byte Kotlin v2 | `encodeEvent` = `envelope-event.json` | **PASS** |
 | INT-007 | parse v1 `a3.*` → `io.a3ep.*`; no crash; attestation assente | `test/fixtures/v1/envelope-event.json` | **PASS** |
 | INT-008 | CF-004 `attester_id = requester_id` su `io.a3ep.action.authorized` → reject | `pack` + `EnvelopeReject` | **PASS** |
-| INT-009 | freeze repo a3: `git diff` / porcelain vuoti | `/Users/ambrogio/Desktop/a3` | **PASS** |
+| INT-009 | freeze repo a3: `git diff` / porcelain vuoti | `../a3` | **PASS** |
 
 Gate: **verde**. Tag locale `a3-ts-v0.2`. Push solo `a3-ts`. Repo `a3` non toccato.
 
