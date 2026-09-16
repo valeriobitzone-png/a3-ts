@@ -1,25 +1,48 @@
-# a3-ts
+# a3-ts — A3-EP TypeScript reference
 
-TypeScript reference implementation of A3-EP. Validates against **A3-EP v0.2.0 with lock v2**.
+![a3-ts cover](docs/assets/cover.png)
 
-Lock files are copies of `a3/conformance/vectors/v2/` (SHA-256). Lock v1 envelopes used only for parse backward-compat live in `test/fixtures/v1/`.
+## What it is
 
-## Run
+A TypeScript reference implementation of A3-EP v0.2.0 with lock-vector v2 support, JCS serialization, CloudEvents, temporal ordering, truth, confidence, and attestation validation.
 
+## What it is not
+
+It is not a translation of the Kotlin or Go sources, not a UI renderer, and not evidence that a downstream deployment is production-ready.
+
+## Status
+
+- **VERIFIED:** TypeScript lock-vector and conformance tests, v1 parse compatibility, v2 canonical output, and CF-001..CF-009 rejection behavior.
+- **UNVERIFIED:** physical deployment and third-party adoption.
+
+## Get it
+
+```bash
+git clone https://github.com/valeriobitzone-png/a3-ts.git
+cd a3-ts
+# Requirements: Node.js >=20 and pnpm
+pnpm install
 ```
-node --test --test-reporter=spec test/*.test.ts
-pnpm test
+
+Structure: `src/` implementation, `test/` lock/conformance tests, and `REVIEW_A3_TS.md` audit evidence. Runtime dependencies are zero.
+
+## Prove it
+
+```bash
 pnpm typecheck
+pnpm test
 ```
 
-`pnpm test` is `node --test` on the INT files. Zero runtime `dependencies`. JCS is RFC 8785 in `src/jcs.ts`. SHA-256 is `node:crypto`.
+Expected result: typecheck and all INT tests exit 0; lock v2 bytes match the declared SHA-256 values.
 
-## Lock v2
+## Integrate it
 
-| Field | Value |
-|-------|--------|
-| `type` | `io.a3ep.belief.admitted` |
-| `event_id` | `1fec213fbaf6d420cf9ff95c51c022c4cdfb1f43fabcf82647e03c03f92f2b7b` |
-| attestation | `attester_id` ≠ `requester_id` (`urn:a3:party:attester` / `urn:a3:party:requester`) |
+Use the reference tests as a template when implementing A3-EP in another language. Read `../a3/spec/SPEC_A3-EP.md` as the contract and compare your canonical bytes to the shared lock vectors; do not copy implementation code.
 
-Parser accepts lock v1 `a3.*` types and normalizes to `io.a3ep.*`. Output MUST NOT emit `a3.*`. CF-004: `attester_id = requester_id` on `io.a3ep.action.authorized` is an explicit reject.
+## License
+
+Implementation code is Apache-2.0. The governing protocol specification and shared schemas are CC BY 4.0 in `../a3/spec/`.
+
+## Provenance
+
+Measured: test results, canonical bytes, and SHA-256 lock comparisons. Deducted or unverified: behavior outside the declared test corpus and downstream production use. The review records the exact vectors and known floating-point divergence.
