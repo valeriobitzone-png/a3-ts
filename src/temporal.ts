@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Part of the A3 universe. See LICENSE.
 /**
  * Four explicit times. No clock. Order is (t_observe, source_id, seq).
  * Fold is last-wins per key after dedup, commutative, no combined confidence.

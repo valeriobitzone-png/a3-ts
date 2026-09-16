@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Part of the A3 universe. See LICENSE.
 /**
  * CloudEvents 1.0 envelope. Identity is SHA-256 of RFC 8785(payload),
  * never a random UUID. time equals t_present. fold_ref omitted if absent.

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Part of the A3 universe. See LICENSE.
 /**
  * Five-dimension confidence. Aggregation is a declared weighted minimum.
  * Recency decays as 2^(-(t_present - t_observe) / 21600). No clock. No average.

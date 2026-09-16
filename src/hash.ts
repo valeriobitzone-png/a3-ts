@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Part of the A3 universe. See LICENSE.
 import { createHash } from "node:crypto";
 import { utf8 } from "./jcs.ts";
 

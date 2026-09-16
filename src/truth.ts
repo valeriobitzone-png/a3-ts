@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Part of the A3 universe. See LICENSE.
 /**
  * Truth class and provenance are law of the bearer. UNKNOWN is first-class.
  * HYPOTHESIS becomes FACT only with VerificationAdmitted in REAL.
