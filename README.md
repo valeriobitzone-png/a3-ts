@@ -20,7 +20,10 @@ It is not a translation of the Kotlin or Go sources, not a UI renderer, and not 
 ```bash
 git clone https://github.com/valeriobitzone-png/a3-ts.git
 cd a3-ts
-# Requirements: Node.js >=20 and pnpm
+# Requirements: Node.js >=20 and pnpm.
+# INT-009 reads the normative spec and freeze state from this pinned sibling:
+git clone https://github.com/valeriobitzone-png/a3.git ../a3
+git -C ../a3 checkout closeout-v1.0
 pnpm install
 ```
 
@@ -37,7 +40,7 @@ Expected result: typecheck and all INT tests exit 0; lock v2 bytes match the dec
 
 ## Integrate it
 
-Use the reference tests as a template when implementing A3-EP in another language. Read `../a3/spec/SPEC_A3-EP.md` as the contract and compare your canonical bytes to the shared lock vectors; do not copy implementation code.
+Use the reference tests as a template when implementing A3-EP in another language. Keep the documented `../a3` checkout at `closeout-v1.0`, read `../a3/spec/SPEC_A3-EP.md` as the contract, and compare your canonical bytes to the shared lock vectors; do not copy implementation code.
 
 ## License
 
