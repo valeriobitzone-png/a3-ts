@@ -110,6 +110,42 @@ export function fromProcessOutcome(
   return bearer("observation", provenance, ref);
 }
 
+/**
+ * CF-001: FACT from an execution receipt. SPEC_A3-EP §2, §3, §10:
+ * receipt ≠ fact, whatever the receipt contains.
+ */
+export class ReceiptFactReject extends TruthReject {
+  readonly code = "CF-001";
+  constructor() {
+    super("CF-001: FACT from an execution receipt (a receipt is OBSERVATION whatever it contains)");
+    this.name = "ReceiptFactReject";
+  }
+}
+
+/**
+ * Any execution receipt (process, tool, HTTP, MCP) is OBSERVATION. The
+ * receipt is not read: exit code, printed text, status and payload never
+ * decide the truth class.
+ */
+export function fromReceipt(
+  _receipt: unknown,
+  provenance: Provenance = "observed_signed",
+  ref = "receipt"
+): TruthBearer {
+  return bearer("observation", provenance, ref);
+}
+
+/**
+ * Admit a claimed truth class whose basis is a receipt. FACT (any spelling)
+ * throws ReceiptFactReject; any other valid class gets the lawful
+ * classification, OBSERVATION.
+ */
+export function admitOnReceipt(claimed: unknown, receipt: unknown, ref = "receipt"): TruthBearer {
+  const truthClass = parseEnum(claimed, TRUTH_CLASS, "truthClass");
+  if (truthClass === "fact") throw new ReceiptFactReject();
+  return fromReceipt(receipt, "observed_signed", ref);
+}
+
 export function fromSandbox(verificationId: string, provenance: Provenance): TruthBearer {
   if (!verificationId.trim()) throw new TruthReject("verificationId must be non-blank");
   return bearer("observation", provenance, verificationId);

@@ -16,7 +16,7 @@ It is not a UI renderer, not implementation code copied from another language, a
 
 ## Status
 
-- **VERIFIED:** lock-vector and conformance tests, v1 parse compatibility, v2 canonical output, and CF-001..CF-009 rejection behavior.
+- **VERIFIED:** lock-vector and conformance tests, v1 parse compatibility, v2 canonical output, CF-001 over the shared receipt forms (`receipt ≠ fact`, INT-010), and CF-004 (INT-008). CF-002, CF-003, CF-005 and CF-007..CF-009 are covered by the truth, confidence, temporal and envelope laws, but the category fixtures are not yet judged one by one; CF-006 has no category judge.
 - **UNVERIFIED:** physical deployment and third-party adoption.
 
 ## Quickstart
