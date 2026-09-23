@@ -4,7 +4,7 @@
 
 A TypeScript reference implementation of A3-EP v0.2.0 and its canonical lock vectors.
 
-[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](https://github.com/valeriobitzone-png/a3/blob/main/LICENSE) [![Latest tag](https://img.shields.io/github/v/tag/valeriobitzone-png/a3-ts?sort=semver)](https://github.com/valeriobitzone-png/a3-ts/tags) [![CI](https://github.com/valeriobitzone-png/a3-ts/actions/workflows/ci.yml/badge.svg)](https://github.com/valeriobitzone-png/a3-ts/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE) [![Latest tag](https://img.shields.io/github/v/tag/valeriobitzone-png/a3-ts?sort=semver)](https://github.com/valeriobitzone-png/a3-ts/tags) [![CI](https://github.com/valeriobitzone-png/a3-ts/actions/workflows/ci.yml/badge.svg)](https://github.com/valeriobitzone-png/a3-ts/actions/workflows/ci.yml)
 
 ## What it is
 
